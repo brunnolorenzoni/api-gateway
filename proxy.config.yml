@@ -1,0 +1,8 @@
+nameApplication: API Gateway
+hostApplication: http://localhost:8080
+
+services:
+  - nameRoute: /v1/delivery/ ## path name in proxy
+    url: http://localhost:5050 ## host target
+    routes:
+      - path: /delivery ## path target

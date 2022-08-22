@@ -5,14 +5,18 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import ErrorMiddleware from "./middleware/Error";
+import proxyConfig from './config/proxy.config'
 import AuthorizationParams from "./middleware/AuthorizationParams";
 import AuthorizationVerify from "./middleware/AuthorizationVerify";
 
+
 class App {
   public app: Application;
+  private config;
 
-  public constructor() {
+  constructor() {
     this.app = express();
+    this.config = proxyConfig();
     this.middlewares();
     this.proxy();
     this.onError()
@@ -28,17 +32,22 @@ class App {
     this.app.use(AuthorizationVerify);
   }
 
-  private proxy(): void {
-    this.app.use(
-      "/",
-      createProxyMiddleware({
-        target: "http://localhost:3000/healths",
-        changeOrigin: true,
-        pathRewrite: {
-          "^/": "/",
-        },
+  private proxy(): void{
+    if(!this.config.services) throw new Error('Set services on proxy.config.ts')
+    this.config.services.forEach(service => {
+      const { nameRoute, url, routes } = service
+      routes.forEach(resource => {
+        const { path } = resource
+        const target = `${url}${path}`
+        this.app.use(nameRoute, createProxyMiddleware({
+          target,
+          changeOrigin: true,
+          pathRewrite: {
+            [nameRoute]: "/",
+          },
+        }))
       })
-    );
+    });
   }
 
   private onError(): void {
