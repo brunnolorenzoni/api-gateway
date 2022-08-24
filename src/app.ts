@@ -1,13 +1,12 @@
-import express, { Application } from "express";
-import { createProxyMiddleware } from "http-proxy-middleware";
-import cookieParser from 'cookie-parser'
-import cors from "cors";
-import helmet from "helmet";
-import morgan from "morgan";
-import ErrorMiddleware from "./middleware/Error";
+import express, { Application } from 'express';
+import { createProxyMiddleware } from 'http-proxy-middleware';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import ErrorMiddleware from './middleware/Error';
 import proxyConfig from './config/proxy.config'
-import AuthorizationParams from "./middleware/AuthorizationParams";
-import AuthorizationVerify from "./middleware/AuthorizationVerify";
+import auth from './middleware/Auth'
 
 
 class App {
@@ -24,12 +23,13 @@ class App {
 
   private middlewares(): void {
     this.app.use(cookieParser());
-    this.app.use(morgan("dev"));
-    this.app.use(cors());
+    this.app.use(morgan('dev'));
     this.app.use(helmet());
-    this.app.use(express.json());
-    this.app.use(AuthorizationParams);
-    this.app.use(AuthorizationVerify);
+    this.app.use(cors({
+      credentials: true,
+      origin: ['http://localhost:5500'],
+    }));
+    this.app.use(auth)
   }
 
   private proxy(): void{
@@ -43,7 +43,7 @@ class App {
           target,
           changeOrigin: true,
           pathRewrite: {
-            [nameRoute]: "/",
+            [nameRoute]: '/',
           },
         }))
       })
@@ -52,6 +52,11 @@ class App {
 
   private onError(): void {
     this.app.use(ErrorMiddleware)
+    
+    this.app.all('*', function(req, res, next){
+      console.log('General Validations');
+      res.status(404).send('Not Found')
+  });
   }
 
 }
