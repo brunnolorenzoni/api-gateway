@@ -54,7 +54,6 @@ class App {
     this.app.use(ErrorMiddleware)
     
     this.app.all('*', function(req, res, next){
-      console.log('General Validations');
       res.status(404).send('Not Found')
   });
   }
