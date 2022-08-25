@@ -39,9 +39,11 @@ class App {
       routes.forEach(resource => {
         const { path } = resource
         const target = `${url}${path}`
+        const isWS = url.substring(0, 2) === 'ws'
         this.app.use(nameRoute, createProxyMiddleware({
           target,
           changeOrigin: true,
+          ws: isWS,
           pathRewrite: {
             [nameRoute]: '/',
           },

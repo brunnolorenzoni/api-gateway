@@ -6,3 +6,8 @@ services:
     url: http://localhost:3031 ## host target
     routes:
       - path: /api/v1/tracking ## path target
+
+  - nameRoute: /socket.io
+    url: ws://localhost:4040
+    routes:
+      - path: /tracking
